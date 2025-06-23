@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Users table
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  notes      Note[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Notes table
+model Note {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  title      String
+  blocks     Block[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// Blocks table
+model Block {
+  id         Int      @id @default(autoincrement())
+  note       Note     @relation(fields: [noteId], references: [id])
+  noteId     Int
+  parent     Block?   @relation("BlockToBlock", fields: [parentId], references: [id])
+  parentId   Int?
+  children   Block[]  @relation("BlockToBlock")
+  type       BlockType
+  content    Json
+  orderIndex Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+enum BlockType {
+  text
+  checklist
+  image
+  code
+} 
