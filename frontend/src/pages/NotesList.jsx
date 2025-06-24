@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
+import {
+  Box, Heading, Button, Input, List, ListItem, Flex, Spinner, Alert, AlertIcon, Text
+} from '@chakra-ui/react';
 
 export default function NotesList() {
   const [notes, setNotes] = useState([]);
@@ -49,38 +52,36 @@ export default function NotesList() {
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto', padding: 24 }}>
-      <h2>Daftar Catatan</h2>
-      <form onSubmit={handleSubmit(onAddNote)} style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-        <input
-          type="text"
-          placeholder="Judul catatan baru"
-          {...register('title', { required: true })}
-          style={{ flex: 1, padding: 8, borderRadius: 4, border: '1px solid #bbb' }}
-        />
-        <button type="submit" style={{ padding: '8px 16px', borderRadius: 4, background: '#2563eb', color: '#fff', border: 'none' }}>
-          Tambah
-        </button>
+    <Box maxW="600px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
+      <Heading size="md" mb="6">Daftar Catatan</Heading>
+      <form onSubmit={handleSubmit(onAddNote)}>
+        <Flex gap={2} mb={4}>
+          <Input
+            type="text"
+            placeholder="Judul catatan baru"
+            {...register('title', { required: true })}
+            bg="gray.50"
+          />
+          <Button colorScheme="blue" type="submit">Tambah</Button>
+        </Flex>
+        {errors.title && <Text color="red.500" mb={2}>Judul wajib diisi</Text>}
+        {addError && <Alert status="error" mb={2}><AlertIcon />{addError}</Alert>}
       </form>
-      {errors.title && <div style={{ color: '#dc2626' }}>Judul wajib diisi</div>}
-      {addError && <div style={{ color: '#dc2626' }}>{addError}</div>}
-      {loading && <div>Loading...</div>}
-      {error && <div style={{ color: '#dc2626' }}>{error}</div>}
-      {!loading && !error && notes.length === 0 && <div>Belum ada catatan.</div>}
-      <ul>
+      {loading && <Flex justify="center" my={6}><Spinner /></Flex>}
+      {error && <Alert status="error" mb={4}><AlertIcon />{error}</Alert>}
+      {!loading && !error && notes.length === 0 && <Text color="gray.500">Belum ada catatan.</Text>}
+      <List spacing={2}>
         {notes.map(note => (
-          <li key={note.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>
-              <Link to={`/notes/${note.id}`} style={{ color: '#2563eb', textDecoration: 'underline', fontWeight: 500 }}>
-                {note.title}
-              </Link>
-            </span>
-            <button onClick={() => onDelete(note.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer' }}>
+          <ListItem key={note.id} p={3} borderWidth="1px" borderRadius="md" display="flex" alignItems="center" justifyContent="space-between">
+            <Link to={`/notes/${note.id}`} style={{ color: '#2563eb', fontWeight: 500, textDecoration: 'underline' }}>
+              {note.title}
+            </Link>
+            <Button size="sm" colorScheme="red" onClick={() => onDelete(note.id)}>
               Hapus
-            </button>
-          </li>
+            </Button>
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Box>
   );
 } 

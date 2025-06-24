@@ -15,6 +15,9 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  Box, Heading, Button, Input, Flex, Spinner, Alert, AlertIcon, Text, VStack
+} from '@chakra-ui/react';
 
 const BLOCK_TYPES = [
   { type: 'text', label: 'Text' },
@@ -33,9 +36,9 @@ function SortableBlock({ block, children }) {
     cursor: 'grab',
   };
   return (
-    <li ref={setNodeRef} style={{ ...style, marginBottom: 12, padding: 8, border: '1px solid #eee', borderRadius: 4 }} {...attributes} {...listeners}>
+    <Box as="li" ref={setNodeRef} {...attributes} {...listeners} mb={3} p={3} borderWidth="1px" borderRadius="md" style={style}>
       {children}
-    </li>
+    </Box>
   );
 }
 
@@ -237,155 +240,146 @@ export default function NoteEditor() {
   };
 
   return (
-    <div style={{ maxWidth: 700, margin: '40px auto', padding: 24 }}>
-      {loading && <div>Loading...</div>}
-      {error && <div style={{ color: '#dc2626' }}>{error}</div>}
+    <Box maxW="700px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
+      {loading && <Flex justify="center" my={6}><Spinner /></Flex>}
+      {error && <Alert status="error" mb={4}><AlertIcon />{error}</Alert>}
       {note && (
         <>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+          <Flex align="center" gap={3} mb={2}>
             {editTitle ? (
               <>
-                <input
+                <Input
                   type="text"
                   value={titleValue}
                   onChange={e => setTitleValue(e.target.value)}
-                  style={{ fontSize: 22, fontWeight: 600, padding: 6, borderRadius: 4, border: '1px solid #bbb', minWidth: 200 }}
+                  fontSize={22}
+                  fontWeight={600}
+                  bg="gray.50"
                   disabled={titleLoading}
                 />
-                <button onClick={handleTitleSave} disabled={titleLoading} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500 }}>
-                  Simpan
-                </button>
-                <button onClick={() => setEditTitle(false)} style={{ border: '1px solid #bbb', borderRadius: 4, padding: '6px 16px', background: '#f3f4f6', cursor: 'pointer' }}>
-                  Batal
-                </button>
-                {titleError && <span style={{ color: '#dc2626', marginLeft: 8 }}>{titleError}</span>}
+                <Button colorScheme="blue" onClick={handleTitleSave} isLoading={titleLoading}>Simpan</Button>
+                <Button onClick={() => setEditTitle(false)}>Batal</Button>
+                {titleError && <Text color="red.500">{titleError}</Text>}
               </>
             ) : (
               <>
-                <h2 style={{ margin: 0 }}>{note.title}</h2>
-                <button onClick={handleTitleEdit} style={{ fontSize: 14, padding: '4px 12px', borderRadius: 4, border: '1px solid #bbb', background: '#f3f4f6', cursor: 'pointer' }}>
-                  Edit
-                </button>
+                <Heading size="md" m={0}>{note.title}</Heading>
+                <Button size="sm" onClick={handleTitleEdit}>Edit</Button>
               </>
             )}
-          </div>
-          <div style={{ marginBottom: 16 }}>
-            <button onClick={() => setShowAddBlock(v => !v)} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', fontWeight: 500 }}>
-              Tambah Blok
-            </button>
+          </Flex>
+          <Box mb={4}>
+            <Button onClick={() => setShowAddBlock(v => !v)} colorScheme="blue">Tambah Blok</Button>
             {showAddBlock && (
-              <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+              <Flex mt={2} gap={2}>
                 {BLOCK_TYPES.map(opt => (
-                  <button
-                    key={opt.type}
-                    onClick={() => handleAddBlock(opt.type)}
-                    disabled={addBlockLoading}
-                    style={{ padding: '6px 14px', borderRadius: 4, border: '1px solid #bbb', background: '#f3f4f6', cursor: 'pointer' }}
-                  >
+                  <Button key={opt.type} size="sm" onClick={() => handleAddBlock(opt.type)} isLoading={addBlockLoading} variant="outline">
                     {opt.label}
-                  </button>
+                  </Button>
                 ))}
-              </div>
+              </Flex>
             )}
-            {addBlockError && <div style={{ color: '#dc2626', marginTop: 8 }}>{addBlockError}</div>}
-          </div>
-          <h4>Blok Catatan:</h4>
-          {reorderLoading && <div style={{ color: '#2563eb' }}>Menyimpan urutan blok...</div>}
-          {autosaveLoading && <div style={{ color: '#2563eb' }}>Menyimpan perubahan blok...</div>}
-          {blocks.length === 0 && <div>Belum ada blok.</div>}
+            {addBlockError && <Alert status="error" mt={2}><AlertIcon />{addBlockError}</Alert>}
+          </Box>
+          <Heading size="sm" mb={2}>Blok Catatan:</Heading>
+          {reorderLoading && <Text color="blue.600">Menyimpan urutan blok...</Text>}
+          {autosaveLoading && <Text color="blue.600">Menyimpan perubahan blok...</Text>}
+          {blocks.length === 0 && <Text color="gray.500">Belum ada blok.</Text>}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-              <ul style={{ listStyle: 'none', padding: 0 }}>
+              <VStack as="ul" spacing={2} align="stretch">
                 {blocks.map(block => (
                   <SortableBlock key={block.id} block={block}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <b>{block.type}</b>
-                      <button onClick={() => handleEdit(block)} style={{ fontSize: 13, padding: '2px 8px', borderRadius: 4, border: '1px solid #bbb', background: '#f3f4f6', cursor: 'pointer' }}>
-                        Edit
-                      </button>
-                      <button onClick={() => handleDelete(block.id)} disabled={deleteLoading === block.id} style={{ fontSize: 13, padding: '2px 8px', borderRadius: 4, background: '#dc2626', color: '#fff', border: 'none', cursor: 'pointer' }}>
-                        {deleteLoading === block.id ? '...' : 'Hapus'}
-                      </button>
-                    </div>
+                    <Flex align="center" gap={2} mb={2}>
+                      <Text fontWeight="bold">{block.type}</Text>
+                      <Button size="xs" onClick={() => handleEdit(block)} variant="outline">Edit</Button>
+                      <Button size="xs" colorScheme="red" onClick={() => handleDelete(block.id)} isLoading={deleteLoading === block.id}>Hapus</Button>
+                    </Flex>
                     {editBlockId === block.id ? (
-                      <div style={{ marginTop: 8 }}>
+                      <Box mt={2}>
                         {block.type === 'text' && (
-                          <textarea
+                          <Input
+                            as="textarea"
                             value={editValue}
                             onChange={e => handleEditChange(block, e.target.value)}
                             rows={3}
-                            style={{ width: '100%', fontSize: 15, padding: 6 }}
+                            fontSize={15}
+                            bg="gray.50"
                           />
                         )}
                         {block.type === 'code' && (
-                          <textarea
+                          <Input
+                            as="textarea"
                             value={editValue}
                             onChange={e => handleEditChange(block, e.target.value)}
                             rows={4}
-                            style={{ width: '100%', fontFamily: 'monospace', fontSize: 15, padding: 6, background: '#f3f4f6' }}
+                            fontFamily="monospace"
+                            fontSize={15}
+                            bg="gray.100"
                           />
                         )}
                         {block.type === 'image' && (
-                          <input
+                          <Input
                             type="url"
                             value={editValue}
                             onChange={e => handleEditChange(block, e.target.value)}
                             placeholder="URL gambar"
-                            style={{ width: '100%', fontSize: 15, padding: 6 }}
+                            fontSize={15}
+                            bg="gray.50"
                           />
                         )}
                         {block.type === 'checklist' && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <input
+                          <Flex align="center" gap={2}>
+                            <Input
                               type="checkbox"
                               checked={editChecklist.checked}
                               onChange={e => handleEditChange(block, { ...editChecklist, checked: e.target.checked })}
+                              width={5}
                             />
-                            <input
+                            <Input
                               type="text"
                               value={editChecklist.text}
                               onChange={e => handleEditChange(block, { ...editChecklist, text: e.target.value })}
                               placeholder="Teks checklist"
-                              style={{ flex: 1, fontSize: 15, padding: 6 }}
+                              fontSize={15}
+                              bg="gray.50"
                             />
-                          </div>
+                          </Flex>
                         )}
-                        {editError && <div style={{ color: '#dc2626', marginTop: 6 }}>{editError}</div>}
-                        <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-                          <button onClick={() => handleEditSubmit(block)} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500 }}>
-                            Simpan
-                          </button>
-                          <button onClick={() => setEditBlockId(null)} style={{ border: '1px solid #bbb', borderRadius: 4, padding: '6px 16px', background: '#f3f4f6', cursor: 'pointer' }}>
-                            Batal
-                          </button>
-                        </div>
-                      </div>
+                        {editError && <Text color="red.500" mt={1}>{editError}</Text>}
+                        <Flex mt={2} gap={2}>
+                          <Button colorScheme="blue" onClick={() => handleEditSubmit(block)}>Simpan</Button>
+                          <Button onClick={() => setEditBlockId(null)}>Batal</Button>
+                        </Flex>
+                      </Box>
                     ) : (
-                      <div style={{ marginTop: 8 }}>
-                        {block.type === 'text' && <div>{block.content}</div>}
+                      <Box mt={2}>
+                        {block.type === 'text' && <Text>{block.content}</Text>}
                         {block.type === 'code' && (
-                          <pre style={{ background: '#f3f4f6', padding: 8, borderRadius: 4, fontFamily: 'monospace', fontSize: 15 }}>
+                          <Box as="pre" bg="gray.100" p={2} borderRadius="md" fontFamily="monospace" fontSize={15}>
                             {block.content}
-                          </pre>
+                          </Box>
                         )}
                         {block.type === 'image' && block.content && (
-                          <img src={block.content} alt="img" style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }} />
+                          <Box>
+                            <img src={block.content} alt="img" style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }} />
+                          </Box>
                         )}
                         {block.type === 'checklist' && (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <input type="checkbox" checked={!!block.content.checked} readOnly />
-                            <span>{block.content.text}</span>
-                          </div>
+                          <Flex align="center" gap={2}>
+                            <Input type="checkbox" checked={!!block.content.checked} readOnly width={5} />
+                            <Text>{block.content.text}</Text>
+                          </Flex>
                         )}
-                      </div>
+                      </Box>
                     )}
                   </SortableBlock>
                 ))}
-              </ul>
+              </VStack>
             </SortableContext>
           </DndContext>
         </>
       )}
-    </div>
+    </Box>
   );
 } 
