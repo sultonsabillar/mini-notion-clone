@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../utils/api';
 import {
@@ -39,6 +39,20 @@ function SortableBlock({ block, children }) {
   );
 }
 
+function useDebouncedCallback(callback, delay, deps = []) {
+  const timeout = useRef();
+  useEffect(() => {
+    return () => clearTimeout(timeout.current);
+    // eslint-disable-next-line
+  }, deps);
+  return (...args) => {
+    clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      callback(...args);
+    }, delay);
+  };
+}
+
 export default function NoteEditor() {
   const { id } = useParams();
   const [note, setNote] = useState(null);
@@ -54,6 +68,7 @@ export default function NoteEditor() {
   const [deleteLoading, setDeleteLoading] = useState(null);
   const [blocks, setBlocks] = useState([]);
   const [reorderLoading, setReorderLoading] = useState(false);
+  const [autosaveLoading, setAutosaveLoading] = useState(false);
 
   const fetchNote = () => {
     setLoading(true);
@@ -103,6 +118,35 @@ export default function NoteEditor() {
       });
     } else {
       setEditValue(block.content || '');
+    }
+  };
+
+  // AUTOSAVE
+  const debouncedAutosave = useDebouncedCallback(async (block, value) => {
+    setAutosaveLoading(true);
+    try {
+      let content;
+      if (block.type === 'checklist') {
+        content = value;
+      } else {
+        content = value;
+      }
+      await api.put(`/blocks/${block.id}`, { content });
+      // Tidak perlu fetchNote, update state lokal saja jika ingin lebih smooth
+    } catch (err) {
+      // Bisa tampilkan error autosave jika ingin
+    } finally {
+      setAutosaveLoading(false);
+    }
+  }, 600, [editBlockId, editValue, editChecklist]);
+
+  const handleEditChange = (block, value) => {
+    if (block.type === 'checklist') {
+      setEditChecklist(value);
+      debouncedAutosave(block, value);
+    } else {
+      setEditValue(value);
+      debouncedAutosave(block, value);
     }
   };
 
@@ -190,6 +234,7 @@ export default function NoteEditor() {
           </div>
           <h4>Blok Catatan:</h4>
           {reorderLoading && <div style={{ color: '#2563eb' }}>Menyimpan urutan blok...</div>}
+          {autosaveLoading && <div style={{ color: '#2563eb' }}>Menyimpan perubahan blok...</div>}
           {blocks.length === 0 && <div>Belum ada blok.</div>}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
@@ -210,7 +255,7 @@ export default function NoteEditor() {
                         {block.type === 'text' && (
                           <textarea
                             value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
+                            onChange={e => handleEditChange(block, e.target.value)}
                             rows={3}
                             style={{ width: '100%', fontSize: 15, padding: 6 }}
                           />
@@ -218,7 +263,7 @@ export default function NoteEditor() {
                         {block.type === 'code' && (
                           <textarea
                             value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
+                            onChange={e => handleEditChange(block, e.target.value)}
                             rows={4}
                             style={{ width: '100%', fontFamily: 'monospace', fontSize: 15, padding: 6, background: '#f3f4f6' }}
                           />
@@ -227,7 +272,7 @@ export default function NoteEditor() {
                           <input
                             type="url"
                             value={editValue}
-                            onChange={e => setEditValue(e.target.value)}
+                            onChange={e => handleEditChange(block, e.target.value)}
                             placeholder="URL gambar"
                             style={{ width: '100%', fontSize: 15, padding: 6 }}
                           />
@@ -237,12 +282,12 @@ export default function NoteEditor() {
                             <input
                               type="checkbox"
                               checked={editChecklist.checked}
-                              onChange={e => setEditChecklist(c => ({ ...c, checked: e.target.checked }))}
+                              onChange={e => handleEditChange(block, { ...editChecklist, checked: e.target.checked })}
                             />
                             <input
                               type="text"
                               value={editChecklist.text}
-                              onChange={e => setEditChecklist(c => ({ ...c, text: e.target.value }))}
+                              onChange={e => handleEditChange(block, { ...editChecklist, text: e.target.value })}
                               placeholder="Teks checklist"
                               style={{ flex: 1, fontSize: 15, padding: 6 }}
                             />
