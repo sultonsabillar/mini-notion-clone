@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { setLogin } from '../utils/auth';
 import './Login.css';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     setErrorMsg('');
-    setSuccessMsg('');
     try {
-      const res = await api.post('/auth/login', data);
-      setSuccessMsg('Login berhasil!');
+      await api.post('/auth/login', data);
+      setLogin();
       reset();
-      // TODO: Redirect ke halaman utama
+      navigate('/notes');
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Login gagal');
     }
@@ -35,7 +36,6 @@ export default function Login() {
 
         <button type="submit">Login</button>
         {errorMsg && <div className="error">{errorMsg}</div>}
-        {successMsg && <div style={{ color: '#16a34a', fontWeight: 'bold' }}>{successMsg}</div>}
       </form>
     </div>
   );

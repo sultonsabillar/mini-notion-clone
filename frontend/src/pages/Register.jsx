@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import { setLogin } from '../utils/auth';
 import './Login.css';
 
 export default function Register() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
   const [errorMsg, setErrorMsg] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
     setErrorMsg('');
-    setSuccessMsg('');
     try {
       await api.post('/auth/register', data);
-      setSuccessMsg('Register berhasil! Silakan login.');
+      setLogin();
       reset();
+      navigate('/notes');
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Register gagal');
     }
@@ -34,7 +36,6 @@ export default function Register() {
 
         <button type="submit">Register</button>
         {errorMsg && <div className="error">{errorMsg}</div>}
-        {successMsg && <div style={{ color: '#16a34a', fontWeight: 'bold' }}>{successMsg}</div>}
       </form>
     </div>
   );
