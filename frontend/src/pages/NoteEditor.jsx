@@ -26,6 +26,8 @@ const BLOCK_TYPES = [
   { type: 'code', label: 'Code' },
 ];
 
+const BACKEND_URL = 'http://localhost:4000'; // ganti jika backend beda host/port
+
 function SortableBlock({ block, children }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: block.id });
   const style = {
@@ -76,6 +78,10 @@ export default function NoteEditor() {
   const [titleValue, setTitleValue] = useState('');
   const [titleLoading, setTitleLoading] = useState(false);
   const [titleError, setTitleError] = useState('');
+  const fileInputRef = useRef();
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [localImage, setLocalImage] = useState(null);
 
   const fetchNote = () => {
     setLoading(true);
@@ -239,6 +245,27 @@ export default function NoteEditor() {
     }
   };
 
+  const handleImageUpload = async (block, file) => {
+    setUploadingImage(true);
+    setUploadError('');
+    setLocalImage(URL.createObjectURL(file));
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const res = await api.post('/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setEditValue(res.data.url);
+      setLocalImage(null);
+      debouncedAutosave(block, res.data.url);
+    } catch (err) {
+      setUploadError('Gagal upload gambar');
+      setLocalImage(null);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   return (
     <Box maxW="700px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
       {loading && <Flex justify="center" my={6}><Spinner /></Flex>}
@@ -319,14 +346,51 @@ export default function NoteEditor() {
                           />
                         )}
                         {block.type === 'image' && (
-                          <Input
-                            type="url"
-                            value={editValue}
-                            onChange={e => handleEditChange(block, e.target.value)}
-                            placeholder="URL gambar"
-                            fontSize={15}
-                            bg="gray.50"
-                          />
+                          <Box>
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              ref={fileInputRef}
+                              onChange={e => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleImageUpload(block, e.target.files[0]);
+                                }
+                              }}
+                              mb={2}
+                              isDisabled={uploadingImage}
+                            />
+                            {uploadingImage && <Text color="blue.500">Mengupload gambar...</Text>}
+                            {uploadError && <Text color="red.500">{uploadError}</Text>}
+                            {(localImage || editValue) && (
+                              <Box mb={2}>
+                                <img
+                                  src={
+                                    localImage ||
+                                    (editValue &&
+                                      (editValue.startsWith('http://') || editValue.startsWith('https://')
+                                        ? editValue
+                                        : BACKEND_URL + editValue)
+                                    )
+                                  }
+                                  alt="preview"
+                                  style={{ maxWidth: 220, maxHeight: 120, borderRadius: 6, border: '1px solid #ddd' }}
+                                />
+                              </Box>
+                            )}
+                            <Input
+                              type="url"
+                              value={editValue}
+                              onChange={e => {
+                                setEditValue(e.target.value);
+                                setLocalImage(null);
+                                handleEditChange(block, e.target.value);
+                              }}
+                              placeholder="URL gambar"
+                              fontSize={15}
+                              bg="gray.50"
+                              mt={1}
+                            />
+                          </Box>
                         )}
                         {block.type === 'checklist' && (
                           <Flex align="center" gap={2}>
@@ -362,7 +426,15 @@ export default function NoteEditor() {
                         )}
                         {block.type === 'image' && block.content && (
                           <Box>
-                            <img src={block.content} alt="img" style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }} />
+                            <img
+                              src={
+                                block.content.startsWith('http://') || block.content.startsWith('https://')
+                                  ? block.content
+                                  : BACKEND_URL + block.content
+                              }
+                              alt="img"
+                              style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }}
+                            />
                           </Box>
                         )}
                         {block.type === 'checklist' && (
