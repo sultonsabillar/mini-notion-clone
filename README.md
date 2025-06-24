@@ -1,55 +1,34 @@
 # Mini Notion Clone
 
-Aplikasi pencatatan berbasis web dengan sistem blok seperti Notion. Backend menggunakan Express, Prisma, dan PostgreSQL.
+Aplikasi pencatatan berbasis web dengan sistem blok seperti Notion. Backend menggunakan Express, Prisma, dan PostgreSQL. Frontend menggunakan React.
 
 ---
 
-## 🚀 Cara Menjalankan Project Backend
+## 🚀 Cara Menjalankan Project
 
-### 1. **Clone repository**
+### 1. Jalankan Backend
 ```bash
-# (jika belum)
-git clone https://gitlab.com/sultonsabillar/mini-notion-clone.git
-cd mini-notion-clone/backend
-```
-
-### 2. **Siapkan Database PostgreSQL**
-- Pastikan sudah ada database PostgreSQL yang berjalan
-- Buat database baru, misal: `mini_notion_clone`
-
-### 3. **Salin dan edit file environment**
-```bash
-cp .env.example .env
-```
-- Edit file `.env` sesuai konfigurasi database Anda:
-  ```env
-  DATABASE_URL="postgresql://username:password@localhost:5432/mini_notion_clone"
-  JWT_SECRET="your_jwt_secret"
-  ```
-
-### 4. **Install dependency**
-```bash
+cd backend
 npm install
-```
-
-### 5. **Migrasi database**
-```bash
 npx prisma migrate dev --name init
-```
-
-### 6. **Generate Prisma Client** (opsional, biasanya otomatis saat migrate)
-```bash
 npx prisma generate
-```
-
-### 7. **Jalankan server backend**
-```bash
 node index.js
 # atau
 npx nodemon index.js
 ```
+Backend berjalan di: `http://localhost:4000`
 
-Server akan berjalan di `http://localhost:4000`
+### 2. Jalankan Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Frontend berjalan di: `http://localhost:5173`
+
+### 3. Testing
+- Buka `http://localhost:5173` di browser.
+- Register user baru, login, buat catatan, tambah/edit/hapus blok, drag & drop blok, dll.
 
 ---
 
@@ -78,21 +57,28 @@ Server akan berjalan di `http://localhost:4000`
 
 ---
 
-## 📁 Struktur Folder Backend (ringkas)
+## 📁 Struktur Folder (ringkas)
 ```
-backend/
-  ├── prisma/
-  │     └── schema.prisma
-  ├── routes/
-  │     ├── auth.js
-  │     ├── notes.js
-  │     └── blocks.js
-  ├── utils/
-  │     └── authMiddleware.js
-  ├── index.js
-  ├── package.json
-  ├── .env.example
-  └── ...
+mini-notion-clone/
+  backend/
+    prisma/
+    routes/
+    utils/
+    index.js
+    package.json
+    ...
+  frontend/
+    src/
+    package.json
+    ...
+  README.md
+  .gitignore
 ```
+
+---
+
+## 📄 Lisensi & Kontribusi
+- Bebas digunakan untuk belajar.
+- Pull request & issue sangat diterima!
 
 ---
