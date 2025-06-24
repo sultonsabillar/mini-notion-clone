@@ -1,34 +1,57 @@
 # Mini Notion Clone
 
-Aplikasi pencatatan berbasis web dengan sistem blok seperti Notion. Backend menggunakan Express, Prisma, dan PostgreSQL. Frontend menggunakan React.
+Aplikasi web catatan berbasis blok dengan fitur mirip Notion, menggunakan React (Vite), Express, Prisma, PostgreSQL, dan Chakra UI.
 
----
+## Fitur
+- Autentikasi JWT (cookie-based)
+- CRUD catatan dan blok (text, checklist, code, image)
+- Editor blok dengan drag & drop (dnd-kit)
+- **Upload gambar langsung dari komputer (blok image)**
+- Preview gambar otomatis setelah upload
+- Autosave blok
+- UI modern dengan Chakra UI
 
-## 🚀 Cara Menjalankan Project
+## Menjalankan Backend
 
-### 1. Jalankan Backend
-```bash
+```sh
 cd backend
 npm install
-npx prisma migrate dev --name init
-npx prisma generate
-node index.js
-# atau
-npx nodemon index.js
+npm start
 ```
-Backend berjalan di: `http://localhost:4000`
 
-### 2. Jalankan Frontend
-```bash
+> **Catatan:**  
+> Folder `backend/uploads` akan otomatis dibuat saat backend dijalankan.  
+> Semua file gambar hasil upload akan disimpan di folder ini dan dapat diakses melalui URL `/uploads/namafile.jpg`.
+
+## Menjalankan Frontend
+
+```sh
 cd frontend
 npm install
 npm run dev
 ```
-Frontend berjalan di: `http://localhost:5173`
 
-### 3. Testing
-- Buka `http://localhost:5173` di browser.
-- Register user baru, login, buat catatan, tambah/edit/hapus blok, drag & drop blok, dll.
+> **Catatan:**  
+> Pastikan baseURL di `src/utils/api.js` mengarah ke backend, misal:  
+> `http://localhost:4000/api`
+
+## .gitignore
+Pastikan baris berikut ada di `.gitignore`:
+```
+backend/uploads/
+```
+
+## Cara Menambah Blok Gambar
+1. Buka editor catatan.
+2. Tambah blok baru, pilih tipe **Image**.
+3. Pilih file gambar dari komputer.
+4. Preview gambar akan muncul otomatis.
+5. Klik **Simpan** untuk menyimpan blok gambar.
+
+## Troubleshooting
+- Jika upload gambar gagal, pastikan folder `backend/uploads` ada dan dapat ditulis.
+- Jika gambar tidak tampil di frontend, pastikan URL gambar valid dan backend berjalan di port yang benar.
+- Jika preview gambar tidak muncul, pastikan path gambar diawali `/uploads/` atau URL lengkap.
 
 ---
 
