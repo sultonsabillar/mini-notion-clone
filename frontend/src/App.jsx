@@ -6,12 +6,15 @@ import NotesList from './pages/NotesList';
 import NoteEditor from './pages/NoteEditor';
 import ProtectedRoute from './components/ProtectedRoute';
 import { isLoggedIn, setLogout } from './utils/auth';
+import api from './utils/api';
 
 function NavBar() {
   const navigate = useNavigate();
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch {}
     setLogout();
-    // (opsional) panggil endpoint logout ke backend
     navigate('/login');
   };
   return (

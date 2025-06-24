@@ -69,6 +69,10 @@ export default function NoteEditor() {
   const [blocks, setBlocks] = useState([]);
   const [reorderLoading, setReorderLoading] = useState(false);
   const [autosaveLoading, setAutosaveLoading] = useState(false);
+  const [editTitle, setEditTitle] = useState(false);
+  const [titleValue, setTitleValue] = useState('');
+  const [titleLoading, setTitleLoading] = useState(false);
+  const [titleError, setTitleError] = useState('');
 
   const fetchNote = () => {
     setLoading(true);
@@ -88,6 +92,10 @@ export default function NoteEditor() {
     fetchNote();
     // eslint-disable-next-line
   }, [id]);
+
+  useEffect(() => {
+    if (note) setTitleValue(note.title);
+  }, [note]);
 
   const handleAddBlock = async (type) => {
     setAddBlockLoading(true);
@@ -205,13 +213,62 @@ export default function NoteEditor() {
     }
   };
 
+  const handleTitleEdit = () => {
+    setEditTitle(true);
+    setTitleError('');
+  };
+
+  const handleTitleSave = async () => {
+    if (!titleValue.trim()) {
+      setTitleError('Judul wajib diisi');
+      return;
+    }
+    setTitleLoading(true);
+    setTitleError('');
+    try {
+      await api.put(`/notes/${id}`, { title: titleValue });
+      setEditTitle(false);
+      fetchNote();
+    } catch {
+      setTitleError('Gagal update judul');
+    } finally {
+      setTitleLoading(false);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 700, margin: '40px auto', padding: 24 }}>
       {loading && <div>Loading...</div>}
       {error && <div style={{ color: '#dc2626' }}>{error}</div>}
       {note && (
         <>
-          <h2>{note.title}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            {editTitle ? (
+              <>
+                <input
+                  type="text"
+                  value={titleValue}
+                  onChange={e => setTitleValue(e.target.value)}
+                  style={{ fontSize: 22, fontWeight: 600, padding: 6, borderRadius: 4, border: '1px solid #bbb', minWidth: 200 }}
+                  disabled={titleLoading}
+                />
+                <button onClick={handleTitleSave} disabled={titleLoading} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 16px', fontWeight: 500 }}>
+                  Simpan
+                </button>
+                <button onClick={() => setEditTitle(false)} style={{ border: '1px solid #bbb', borderRadius: 4, padding: '6px 16px', background: '#f3f4f6', cursor: 'pointer' }}>
+                  Batal
+                </button>
+                {titleError && <span style={{ color: '#dc2626', marginLeft: 8 }}>{titleError}</span>}
+              </>
+            ) : (
+              <>
+                <h2 style={{ margin: 0 }}>{note.title}</h2>
+                <button onClick={handleTitleEdit} style={{ fontSize: 14, padding: '4px 12px', borderRadius: 4, border: '1px solid #bbb', background: '#f3f4f6', cursor: 'pointer' }}>
+                  Edit
+                </button>
+              </>
+            )}
+          </div>
           <div style={{ marginBottom: 16 }}>
             <button onClick={() => setShowAddBlock(v => !v)} style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: 4, padding: '8px 16px', fontWeight: 500 }}>
               Tambah Blok
