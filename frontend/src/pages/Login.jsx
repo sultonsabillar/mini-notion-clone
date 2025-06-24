@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { setLogin } from '../utils/auth';
-import './Login.css';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box, Button, FormControl, FormLabel, Input, FormErrorMessage, Heading, Alert, AlertIcon, VStack
+} from '@chakra-ui/react';
 
 export default function Login() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -23,20 +25,29 @@ export default function Login() {
   };
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
-      <form onSubmit={handleSubmit(onSubmit)} className="login-form">
-        <label>Email</label>
-        <input type="email" {...register('email', { required: true })} />
-        {errors.email && <span className="error">Email wajib diisi</span>}
-
-        <label>Password</label>
-        <input type="password" {...register('password', { required: true })} />
-        {errors.password && <span className="error">Password wajib diisi</span>}
-
-        <button type="submit">Login</button>
-        {errorMsg && <div className="error">{errorMsg}</div>}
+    <Box maxW="350px" mx="auto" mt="60px" p="8" borderWidth="1px" borderRadius="lg" bg="white" boxShadow="md">
+      <Heading size="md" mb="6" textAlign="center">Login</Heading>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <VStack spacing={4}>
+          <FormControl isInvalid={errors.email}>
+            <FormLabel>Email</FormLabel>
+            <Input type="email" {...register('email', { required: true })} />
+            <FormErrorMessage>Email wajib diisi</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={errors.password}>
+            <FormLabel>Password</FormLabel>
+            <Input type="password" {...register('password', { required: true })} />
+            <FormErrorMessage>Password wajib diisi</FormErrorMessage>
+          </FormControl>
+          <Button colorScheme="blue" type="submit" width="full">Login</Button>
+          {errorMsg && (
+            <Alert status="error" borderRadius="md">
+              <AlertIcon />
+              {errorMsg}
+            </Alert>
+          )}
+        </VStack>
       </form>
-    </div>
+    </Box>
   );
 } 
