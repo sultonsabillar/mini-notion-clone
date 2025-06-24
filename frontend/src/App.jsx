@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from 'react
 import Login from './pages/Login';
 import Register from './pages/Register';
 import NotesList from './pages/NotesList';
+import NoteEditor from './pages/NoteEditor';
 import ProtectedRoute from './components/ProtectedRoute';
 import { isLoggedIn, setLogout } from './utils/auth';
 
@@ -33,6 +34,11 @@ function App() {
         <Route path="/notes" element={
           <ProtectedRoute>
             <NotesList />
+          </ProtectedRoute>
+        } />
+        <Route path="/notes/:id" element={
+          <ProtectedRoute>
+            <NoteEditor />
           </ProtectedRoute>
         } />
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import api from '../utils/api';
 
 export default function NotesList() {
@@ -69,7 +70,11 @@ export default function NotesList() {
       <ul>
         {notes.map(note => (
           <li key={note.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span>{note.title}</span>
+            <span>
+              <Link to={`/notes/${note.id}`} style={{ color: '#2563eb', textDecoration: 'underline', fontWeight: 500 }}>
+                {note.title}
+              </Link>
+            </span>
             <button onClick={() => onDelete(note.id)} style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: 4, padding: '4px 10px', cursor: 'pointer' }}>
               Hapus
             </button>
