@@ -20,7 +20,6 @@ router.put('/:id', authenticate, async (req, res) => {
   const { content, orderIndex, parentId } = req.body;
   const block = await prisma.block.findUnique({ where: { id: Number(req.params.id) } });
   if (!block) return res.status(404).json({ message: 'Block not found' });
-  // Pastikan user hanya bisa edit block milik notenya sendiri
   const note = await prisma.note.findUnique({ where: { id: block.noteId } });
   if (!note || note.userId !== req.userId) return res.status(403).json({ message: 'Forbidden' });
   const updated = await prisma.block.update({
