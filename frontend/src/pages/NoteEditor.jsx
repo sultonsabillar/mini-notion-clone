@@ -16,8 +16,15 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
-  Box, Heading, Button, Input, Flex, Spinner, Alert, AlertIcon, Text, VStack
-} from '@chakra-ui/react';
+  Box,
+  Typography,
+  Button,
+  TextField,
+  Stack,
+  CircularProgress,
+  Alert,
+  Paper
+} from '@mui/material';
 
 const BLOCK_TYPES = [
   { type: 'text', label: 'Text' },
@@ -38,9 +45,9 @@ function SortableBlock({ block, children }) {
     cursor: 'grab',
   };
   return (
-    <Box as="li" ref={setNodeRef} {...attributes} {...listeners} mb={3} p={3} borderWidth="1px" borderRadius="md" style={style}>
+    <Paper ref={setNodeRef} {...attributes} {...listeners} sx={{ mb: 2, p: 2, borderRadius: 2, ...style }}>
       {children}
-    </Box>
+    </Paper>
   );
 }
 
@@ -268,14 +275,14 @@ export default function NoteEditor() {
 
   return (
     <Box maxW="700px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
-      {loading && <Flex justify="center" my={6}><Spinner /></Flex>}
-      {error && <Alert status="error" mb={4}><AlertIcon />{error}</Alert>}
+      {loading && <Flex justify="center" my={6}><CircularProgress /></Flex>}
+      {error && <Alert severity="error" mb={4}><AlertIcon />{error}</Alert>}
       {note && (
         <>
           <Flex align="center" gap={3} mb={2}>
             {editTitle ? (
               <>
-                <Input
+                <TextField
                   type="text"
                   value={titleValue}
                   onChange={e => setTitleValue(e.target.value)}
@@ -286,11 +293,11 @@ export default function NoteEditor() {
                 />
                 <Button colorScheme="blue" onClick={handleTitleSave} isLoading={titleLoading}>Simpan</Button>
                 <Button onClick={() => setEditTitle(false)}>Batal</Button>
-                {titleError && <Text color="red.500">{titleError}</Text>}
+                {titleError && <Typography color="red.500">{titleError}</Typography>}
               </>
             ) : (
               <>
-                <Heading size="md" m={0}>{note.title}</Heading>
+                <Typography size="md" m={0}>{note.title}</Typography>
                 <Button size="sm" onClick={handleTitleEdit}>Edit</Button>
               </>
             )}
@@ -306,26 +313,26 @@ export default function NoteEditor() {
                 ))}
               </Flex>
             )}
-            {addBlockError && <Alert status="error" mt={2}><AlertIcon />{addBlockError}</Alert>}
+            {addBlockError && <Alert severity="error" mt={2}><AlertIcon />{addBlockError}</Alert>}
           </Box>
-          <Heading size="sm" mb={2}>Blok Catatan:</Heading>
-          {reorderLoading && <Text color="blue.600">Menyimpan urutan blok...</Text>}
-          {autosaveLoading && <Text color="blue.600">Menyimpan perubahan blok...</Text>}
-          {blocks.length === 0 && <Text color="gray.500">Belum ada blok.</Text>}
+          <Typography size="sm" mb={2}>Blok Catatan:</Typography>
+          {reorderLoading && <Typography color="blue.600">Menyimpan urutan blok...</Typography>}
+          {autosaveLoading && <Typography color="blue.600">Menyimpan perubahan blok...</Typography>}
+          {blocks.length === 0 && <Typography color="gray.500">Belum ada blok.</Typography>}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
-              <VStack as="ul" spacing={2} align="stretch">
+              <Stack as="ul" spacing={2} align="stretch">
                 {blocks.map(block => (
                   <SortableBlock key={block.id} block={block}>
                     <Flex align="center" gap={2} mb={2}>
-                      <Text fontWeight="bold">{block.type}</Text>
+                      <Typography fontWeight="bold">{block.type}</Typography>
                       <Button size="xs" onClick={() => handleEdit(block)} variant="outline">Edit</Button>
                       <Button size="xs" colorScheme="red" onClick={() => handleDelete(block.id)} isLoading={deleteLoading === block.id}>Hapus</Button>
                     </Flex>
                     {editBlockId === block.id ? (
                       <Box mt={2}>
                         {block.type === 'text' && (
-                          <Input
+                          <TextField
                             as="textarea"
                             value={editValue}
                             onChange={e => handleEditChange(block, e.target.value)}
@@ -335,7 +342,7 @@ export default function NoteEditor() {
                           />
                         )}
                         {block.type === 'code' && (
-                          <Input
+                          <TextField
                             as="textarea"
                             value={editValue}
                             onChange={e => handleEditChange(block, e.target.value)}
@@ -347,7 +354,7 @@ export default function NoteEditor() {
                         )}
                         {block.type === 'image' && (
                           <Box>
-                            <Input
+                            <TextField
                               type="file"
                               accept="image/*"
                               ref={fileInputRef}
@@ -359,8 +366,8 @@ export default function NoteEditor() {
                               mb={2}
                               isDisabled={uploadingImage}
                             />
-                            {uploadingImage && <Text color="blue.500">Mengupload gambar...</Text>}
-                            {uploadError && <Text color="red.500">{uploadError}</Text>}
+                            {uploadingImage && <Typography color="blue.500">Mengupload gambar...</Typography>}
+                            {uploadError && <Typography color="red.500">{uploadError}</Typography>}
                             {(localImage || editValue) && (
                               <Box mb={2}>
                                 <img
@@ -377,7 +384,7 @@ export default function NoteEditor() {
                                 />
                               </Box>
                             )}
-                            <Input
+                            <TextField
                               type="url"
                               value={editValue}
                               onChange={e => {
@@ -394,13 +401,13 @@ export default function NoteEditor() {
                         )}
                         {block.type === 'checklist' && (
                           <Flex align="center" gap={2}>
-                            <Input
+                            <TextField
                               type="checkbox"
                               checked={editChecklist.checked}
                               onChange={e => handleEditChange(block, { ...editChecklist, checked: e.target.checked })}
                               width={5}
                             />
-                            <Input
+                            <TextField
                               type="text"
                               value={editChecklist.text}
                               onChange={e => handleEditChange(block, { ...editChecklist, text: e.target.value })}
@@ -410,7 +417,7 @@ export default function NoteEditor() {
                             />
                           </Flex>
                         )}
-                        {editError && <Text color="red.500" mt={1}>{editError}</Text>}
+                        {editError && <Typography color="red.500" mt={1}>{editError}</Typography>}
                         <Flex mt={2} gap={2}>
                           <Button colorScheme="blue" onClick={() => handleEditSubmit(block)}>Simpan</Button>
                           <Button onClick={() => setEditBlockId(null)}>Batal</Button>
@@ -418,7 +425,7 @@ export default function NoteEditor() {
                       </Box>
                     ) : (
                       <Box mt={2}>
-                        {block.type === 'text' && <Text>{block.content}</Text>}
+                        {block.type === 'text' && <Typography>{block.content}</Typography>}
                         {block.type === 'code' && (
                           <Box as="pre" bg="gray.100" p={2} borderRadius="md" fontFamily="monospace" fontSize={15}>
                             {block.content}
@@ -439,15 +446,15 @@ export default function NoteEditor() {
                         )}
                         {block.type === 'checklist' && (
                           <Flex align="center" gap={2}>
-                            <Input type="checkbox" checked={!!block.content.checked} readOnly width={5} />
-                            <Text>{block.content.text}</Text>
+                            <TextField type="checkbox" checked={!!block.content.checked} readOnly width={5} />
+                            <Typography>{block.content.text}</Typography>
                           </Flex>
                         )}
                       </Box>
                     )}
                   </SortableBlock>
                 ))}
-              </VStack>
+              </Stack>
             </SortableContext>
           </DndContext>
         </>

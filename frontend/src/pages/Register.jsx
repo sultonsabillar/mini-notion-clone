@@ -4,8 +4,14 @@ import api from '../utils/api';
 import { setLogin } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import {
-  Box, Button, FormControl, FormLabel, Input, FormErrorMessage, Heading, Alert, AlertIcon, VStack
-} from '@chakra-ui/react';
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Alert,
+  Stack,
+  Paper
+} from '@mui/material';
 
 export default function Register() {
   const { register, handleSubmit, formState: { errors }, reset } = useForm();
@@ -25,29 +31,32 @@ export default function Register() {
   };
 
   return (
-    <Box maxW="350px" mx="auto" mt="60px" p="8" borderWidth="1px" borderRadius="lg" bg="white" boxShadow="md">
-      <Heading size="md" mb="6" textAlign="center">Register</Heading>
+    <Paper sx={{ maxWidth: 350, mx: 'auto', mt: 8, p: 4, borderRadius: 2, boxShadow: 3 }}>
+      <Typography variant="h6" mb={3} align="center">Register</Typography>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <VStack spacing={4}>
-          <FormControl isInvalid={errors.email}>
-            <FormLabel>Email</FormLabel>
-            <Input type="email" {...register('email', { required: true })} />
-            <FormErrorMessage>Email wajib diisi</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={errors.password}>
-            <FormLabel>Password</FormLabel>
-            <Input type="password" {...register('password', { required: true, minLength: 6 })} />
-            <FormErrorMessage>Password minimal 6 karakter</FormErrorMessage>
-          </FormControl>
-          <Button colorScheme="blue" type="submit" width="full">Register</Button>
+        <Stack spacing={2}>
+          <TextField
+            label="Email"
+            type="email"
+            {...register('email', { required: true })}
+            error={!!errors.email}
+            helperText={errors.email && 'Email wajib diisi'}
+            fullWidth
+          />
+          <TextField
+            label="Password"
+            type="password"
+            {...register('password', { required: true, minLength: 6 })}
+            error={!!errors.password}
+            helperText={errors.password && 'Password minimal 6 karakter'}
+            fullWidth
+          />
+          <Button variant="contained" color="primary" type="submit" fullWidth>Register</Button>
           {errorMsg && (
-            <Alert status="error" borderRadius="md">
-              <AlertIcon />
-              {errorMsg}
-            </Alert>
+            <Alert severity="error" variant="filled">{errorMsg}</Alert>
           )}
-        </VStack>
+        </Stack>
       </form>
-    </Box>
+    </Paper>
   );
 } 

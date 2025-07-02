@@ -7,7 +7,7 @@ import NoteEditor from './pages/NoteEditor';
 import ProtectedRoute from './components/ProtectedRoute';
 import { isLoggedIn, setLogout } from './utils/auth';
 import api from './utils/api';
-import { Box, Button, Flex, Container } from '@chakra-ui/react';
+import { Box, Button, Container, Stack } from '@mui/material';
 
 function NavBar() {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ function NavBar() {
     navigate('/login');
   };
   return (
-    <Flex as="nav" gap={4} justify="center" my={6}>
+    <Stack direction="row" component="nav" spacing={4} justifyContent="center" my={6}>
       {!loggedIn && (
         <>
           <Link to="/login">Login</Link>
@@ -30,19 +30,19 @@ function NavBar() {
       {loggedIn && (
         <>
           <Link to="/notes">Catatan</Link>
-          <Button colorScheme="red" size="sm" ml={4} onClick={handleLogout}>
+          <Button color="error" size="small" sx={{ ml: 2 }} onClick={handleLogout} variant="contained">
             Logout
           </Button>
         </>
       )}
-    </Flex>
+    </Stack>
   );
 }
 
 function App() {
   return (
     <BrowserRouter>
-      <Container maxW="container.md" minH="100vh" py={8}>
+      <Container maxWidth="md" sx={{ minHeight: '100vh', py: 8 }}>
         <NavBar />
         <Routes>
           <Route path="/login" element={<Login />} />

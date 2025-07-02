@@ -3,8 +3,17 @@ import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import {
-  Box, Heading, Button, Input, List, ListItem, Flex, Spinner, Alert, AlertIcon, Text
-} from '@chakra-ui/react';
+  Box,
+  Typography,
+  Button,
+  TextField,
+  List,
+  ListItem,
+  Stack,
+  CircularProgress,
+  Alert,
+  Paper
+} from '@mui/material';
 
 export default function NotesList() {
   const [notes, setNotes] = useState([]);
@@ -52,36 +61,38 @@ export default function NotesList() {
   };
 
   return (
-    <Box maxW="600px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
-      <Heading size="md" mb="6">Daftar Catatan</Heading>
+    <Paper sx={{ maxWidth: 600, mx: 'auto', mt: 5, p: 4, borderRadius: 2, boxShadow: 3 }}>
+      <Typography variant="h6" mb={3}>Daftar Catatan</Typography>
       <form onSubmit={handleSubmit(onAddNote)}>
-        <Flex gap={2} mb={4}>
-          <Input
+        <Stack direction="row" spacing={2} mb={2}>
+          <TextField
             type="text"
             placeholder="Judul catatan baru"
             {...register('title', { required: true })}
-            bg="gray.50"
+            error={!!errors.title}
+            helperText={errors.title && 'Judul wajib diisi'}
+            size="small"
+            fullWidth
           />
-          <Button colorScheme="blue" type="submit">Tambah</Button>
-        </Flex>
-        {errors.title && <Text color="red.500" mb={2}>Judul wajib diisi</Text>}
-        {addError && <Alert status="error" mb={2}><AlertIcon />{addError}</Alert>}
+          <Button variant="contained" color="primary" type="submit">Tambah</Button>
+        </Stack>
+        {addError && <Alert severity="error" sx={{ mb: 2 }}>{addError}</Alert>}
       </form>
-      {loading && <Flex justify="center" my={6}><Spinner /></Flex>}
-      {error && <Alert status="error" mb={4}><AlertIcon />{error}</Alert>}
-      {!loading && !error && notes.length === 0 && <Text color="gray.500">Belum ada catatan.</Text>}
-      <List spacing={2}>
+      {loading && <Stack alignItems="center" my={4}><CircularProgress /></Stack>}
+      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+      {!loading && !error && notes.length === 0 && <Typography color="text.secondary">Belum ada catatan.</Typography>}
+      <List>
         {notes.map(note => (
-          <ListItem key={note.id} p={3} borderWidth="1px" borderRadius="md" display="flex" alignItems="center" justifyContent="space-between">
+          <ListItem key={note.id} sx={{ p: 2, border: '1px solid #eee', borderRadius: 1, mb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link to={`/notes/${note.id}`} style={{ color: '#2563eb', fontWeight: 500, textDecoration: 'underline' }}>
               {note.title}
             </Link>
-            <Button size="sm" colorScheme="red" onClick={() => onDelete(note.id)}>
+            <Button size="small" color="error" variant="contained" onClick={() => onDelete(note.id)}>
               Hapus
             </Button>
           </ListItem>
         ))}
       </List>
-    </Box>
+    </Paper>
   );
 } 
