@@ -1,107 +1,137 @@
 # Mini Notion Clone
 
-Aplikasi web catatan berbasis blok dengan fitur mirip Notion, menggunakan React (Vite), Express, Prisma, PostgreSQL, dan Chakra UI.
+Aplikasi web catatan berbasis blok dengan fitur mirip Notion. Dibangun dengan React (Vite), Express, Prisma, PostgreSQL, dan Material UI (MUI). Mendukung drag & drop, upload gambar, autentikasi JWT, dan UI modern.
 
-## Fitur
-- Autentikasi JWT (cookie-based)
-- CRUD catatan dan blok (text, checklist, code, image)
-- Editor blok dengan drag & drop (dnd-kit)
-- **Upload gambar langsung dari komputer (blok image)**
-- Preview gambar otomatis setelah upload
-- Autosave blok
-- UI modern dengan Chakra UI
+---
 
-## Menjalankan Backend
+## ✨ Fitur Utama
+- **Autentikasi JWT** (cookie-based, aman)
+- **CRUD Catatan & Blok** (text, checklist, code, image)
+- **Editor blok drag & drop** (dnd-kit, urutan catatan & blok bisa diubah)
+- **Upload gambar** langsung dari komputer (blok image)
+- **Preview gambar** otomatis setelah upload
+- **Autosave blok** (perubahan langsung tersimpan)
+- **UI modern** dengan Material UI (MUI) & icon SVG custom
+- **Sticky header** di editor, tombol icon, checklist modern
 
+---
+
+## 🚀 Instalasi & Menjalankan
+
+### 1. Backend
 ```sh
 cd backend
 npm install
 npm start
 ```
+- Default port: **4000**
+- Endpoint API: `http://localhost:4000/api`
+- File upload tersimpan di: `backend/uploads/`
+- ENV: Pastikan `DATABASE_URL` PostgreSQL sudah diatur (lihat `.env.example` jika ada)
 
-> **Catatan:**  
-> Folder `backend/uploads` akan otomatis dibuat saat backend dijalankan.  
-> Semua file gambar hasil upload akan disimpan di folder ini dan dapat diakses melalui URL `/uploads/namafile.jpg`.
-
-## Menjalankan Frontend
-
+### 2. Frontend
 ```sh
 cd frontend
 npm install
 npm run dev
 ```
-
-> **Catatan:**  
-> Pastikan baseURL di `src/utils/api.js` mengarah ke backend, misal:  
-> `http://localhost:4000/api`
-
-## .gitignore
-Pastikan baris berikut ada di `.gitignore`:
-```
-backend/uploads/
-```
-
-## Cara Menambah Blok Gambar
-1. Buka editor catatan.
-2. Tambah blok baru, pilih tipe **Image**.
-3. Pilih file gambar dari komputer.
-4. Preview gambar akan muncul otomatis.
-5. Klik **Simpan** untuk menyimpan blok gambar.
-
-## Troubleshooting
-- Jika upload gambar gagal, pastikan folder `backend/uploads` ada dan dapat ditulis.
-- Jika gambar tidak tampil di frontend, pastikan URL gambar valid dan backend berjalan di port yang benar.
-- Jika preview gambar tidak muncul, pastikan path gambar diawali `/uploads/` atau URL lengkap.
+- Default port: **5173**
+- Base URL API di `src/utils/api.js` harus mengarah ke backend: `http://localhost:4000/api`
 
 ---
 
-## 🧪 Contoh Testing Endpoint (Postman)
-
-1. **Register**
-   - POST `/api/auth/register`
-   - Body (JSON): `{ "email": "user@email.com", "password": "password123" }`
-2. **Login**
-   - POST `/api/auth/login`
-   - Body (JSON): `{ "email": "user@email.com", "password": "password123" }`
-   - Setelah login, cookie JWT otomatis tersimpan di Postman
-3. **CRUD Notes**
-   - GET `/api/notes` (list catatan)
-   - POST `/api/notes` (buat catatan baru, body: `{ "title": "Judul Catatan" }`)
-   - GET `/api/notes/:id` (detail catatan)
-   - PUT `/api/notes/:id` (update judul)
-   - DELETE `/api/notes/:id` (hapus catatan)
-4. **CRUD Blocks**
-   - POST `/api/blocks` (buat blok)
-   - PUT `/api/blocks/:id` (update blok)
-   - DELETE `/api/blocks/:id` (hapus blok)
-   - PATCH `/api/blocks/reorder` (reorder blok)
-
-> **Catatan:** Semua endpoint kecuali register/login membutuhkan autentikasi (cookie JWT dari login).
+## 🗄️ Struktur Database (Prisma)
+- **User**: id, email, password, notes[]
+- **Note**: id, userId, title, orderIndex, blocks[]
+- **Block**: id, noteId, type (text, checklist, image, code), content (JSON), orderIndex, parentId (opsional)
 
 ---
 
-## 📁 Struktur Folder (ringkas)
+## 📚 API Utama
+
+### Autentikasi
+- `POST /api/auth/register` `{ email, password }`
+- `POST /api/auth/login` `{ email, password }` _(JWT cookie)_
+
+### Catatan
+- `GET /api/notes` _(list, urut orderIndex)_
+- `POST /api/notes` `{ title }`
+- `GET /api/notes/:id`
+- `PUT /api/notes/:id` `{ title }`
+- `DELETE /api/notes/:id`
+- `PATCH /api/notes/reorder` `[{ id, orderIndex }, ...]` _(update urutan drag & drop)_
+
+### Blok
+- `POST /api/blocks` `{ noteId, type, content, orderIndex }`
+- `PUT /api/blocks/:id` `{ content }`
+- `DELETE /api/blocks/:id`
+- `PATCH /api/blocks/reorder` `[{ id, orderIndex }, ...]`
+
+### Upload Gambar
+- `POST /api/upload` _(form-data: file)_
+- File dapat diakses di `/uploads/namafile.jpg`
+
+> Semua endpoint (kecuali register/login) butuh autentikasi (JWT via cookie)
+
+---
+
+## 🖱️ Drag & Drop
+- Urutan catatan & blok diubah via drag & drop (dnd-kit)
+- Urutan disimpan di field `orderIndex` (Note & Block)
+- Update urutan: PATCH `/api/notes/reorder` & `/api/blocks/reorder`
+
+---
+
+## 🖼️ Upload & Preview Gambar
+- Tambah blok baru, pilih tipe **Image**, pilih file dari komputer
+- Preview muncul otomatis, klik **Simpan** untuk menyimpan
+- File gambar tersimpan di backend, dapat diakses via URL `/uploads/namafile.jpg`
+
+---
+
+## 💡 UI/UX
+- UI modern dengan Material UI (MUI)
+- Drag & drop urutan catatan & blok
+- Sticky judul & toolbar di editor
+- Tombol aksi pakai icon (edit, hapus, simpan, batal)
+- Checklist tampil modern (MUI Checkbox)
+- Blok text selalu rata kiri
+- Branding: judul & favicon custom SVG
+
+---
+
+## 🛠️ Troubleshooting
+- **Upload gagal**: pastikan folder `backend/uploads` ada & writable
+- **Gambar tidak tampil**: cek URL gambar & backend berjalan
+- **Preview tidak muncul**: path gambar harus `/uploads/namafile.jpg`
+- **Autentikasi gagal**: cek cookie JWT & baseURL frontend
+
+---
+
+## 📁 Struktur Folder (Ringkas)
 ```
 mini-notion-clone/
   backend/
-    prisma/
-    routes/
-    utils/
-    index.js
+    prisma/         # Skema & migrasi database
+    routes/         # API routes (auth, notes, blocks, upload)
+    utils/          # Middleware, helper
+    uploads/        # File upload gambar
+    index.js        # Entry point backend
     package.json
-    ...
   frontend/
-    src/
+    src/            # Komponen, pages, utils
+    public/         # Favicon, asset publik
     package.json
-    ...
   README.md
   .gitignore
 ```
 
 ---
 
-## 📄 Lisensi & Kontribusi
-- Bebas digunakan untuk belajar.
+## 🤝 Kontribusi & Lisensi
+- Bebas digunakan untuk belajar & pengembangan
 - Pull request & issue sangat diterima!
 
 ---
+
+**By Sulton | Mini-Notion 2025**

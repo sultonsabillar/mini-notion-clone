@@ -23,6 +23,7 @@ model Note {
   user       User     @relation(fields: [userId], references: [id])
   userId     Int
   title      String
+  orderIndex Int      @default(0)
   blocks     Block[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

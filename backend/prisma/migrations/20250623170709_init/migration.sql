@@ -17,6 +17,7 @@ CREATE TABLE "Note" (
     "id" SERIAL NOT NULL,
     "userId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
+    "orderIndex" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 

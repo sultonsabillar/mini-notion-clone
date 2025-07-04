@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import {
   DndContext,
@@ -23,8 +23,21 @@ import {
   Stack,
   CircularProgress,
   Alert,
-  Paper
+  Paper,
+  Divider,
+  IconButton,
+  Checkbox
 } from '@mui/material';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
+import CheckIcon from '@mui/icons-material/Check';
+import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import CodeIcon from '@mui/icons-material/Code';
+import ImageIcon from '@mui/icons-material/Image';
+import CheckBoxIcon from '@mui/icons-material/CheckBox';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 
 const BLOCK_TYPES = [
   { type: 'text', label: 'Text' },
@@ -89,17 +102,21 @@ export default function NoteEditor() {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [localImage, setLocalImage] = useState(null);
+  const navigate = useNavigate();
 
   const fetchNote = () => {
     setLoading(true);
     api.get(`/notes/${id}`)
       .then(res => {
         setNote(res.data);
-        setBlocks(res.data.blocks.sort((a, b) => a.orderIndex - b.orderIndex));
+        const blocksArr = Array.isArray(res.data.blocks) ? res.data.blocks : [];
+        setBlocks(blocksArr.sort((a, b) => a.orderIndex - b.orderIndex));
         setError('');
+        console.log('NoteEditor fetchNote success', { note: res.data, blocks: blocksArr });
       })
-      .catch(() => {
+      .catch((err) => {
         setError('Gagal mengambil detail catatan');
+        console.error('NoteEditor fetchNote error', err);
       })
       .finally(() => setLoading(false));
   };
@@ -192,7 +209,6 @@ export default function NoteEditor() {
   };
 
   const handleDelete = async (blockId) => {
-    if (!window.confirm('Hapus blok ini?')) return;
     setDeleteLoading(blockId);
     try {
       await api.delete(`/blocks/${blockId}`);
@@ -273,192 +289,200 @@ export default function NoteEditor() {
     }
   };
 
+  // Log render
+  console.log('NoteEditor render', { note, loading, error, blocks });
+
   return (
-    <Box maxW="700px" mx="auto" mt="40px" p="8" bg="white" borderRadius="lg" boxShadow="md">
-      {loading && <Flex justify="center" my={6}><CircularProgress /></Flex>}
-      {error && <Alert severity="error" mb={4}><AlertIcon />{error}</Alert>}
-      {note && (
-        <>
-          <Flex align="center" gap={3} mb={2}>
-            {editTitle ? (
-              <>
-                <TextField
-                  type="text"
-                  value={titleValue}
-                  onChange={e => setTitleValue(e.target.value)}
-                  fontSize={22}
-                  fontWeight={600}
-                  bg="gray.50"
-                  disabled={titleLoading}
-                />
-                <Button colorScheme="blue" onClick={handleTitleSave} isLoading={titleLoading}>Simpan</Button>
-                <Button onClick={() => setEditTitle(false)}>Batal</Button>
-                {titleError && <Typography color="red.500">{titleError}</Typography>}
-              </>
-            ) : (
-              <>
-                <Typography size="md" m={0}>{note.title}</Typography>
-                <Button size="sm" onClick={handleTitleEdit}>Edit</Button>
-              </>
-            )}
-          </Flex>
-          <Box mb={4}>
-            <Button onClick={() => setShowAddBlock(v => !v)} colorScheme="blue">Tambah Blok</Button>
-            {showAddBlock && (
-              <Flex mt={2} gap={2}>
-                {BLOCK_TYPES.map(opt => (
-                  <Button key={opt.type} size="sm" onClick={() => handleAddBlock(opt.type)} isLoading={addBlockLoading} variant="outline">
-                    {opt.label}
-                  </Button>
-                ))}
-              </Flex>
-            )}
-            {addBlockError && <Alert severity="error" mt={2}><AlertIcon />{addBlockError}</Alert>}
+    <Box sx={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'none', py: 6 }}>
+      <Paper elevation={4} sx={{ width: '100%', maxWidth: 700, p: { xs: 2, sm: 4 }, borderRadius: 4, background: '#fff', boxShadow: '0 8px 32px rgba(30,41,59,0.10)', height: '80vh', display: 'flex', flexDirection: 'column' }}>
+        {/* Sticky header judul, toolbar, dan Blok Catatan */}
+        <Box sx={{ position: 'sticky', top: 0, zIndex: 2, background: '#fff', pb: 1, boxShadow: '0 2px 8px rgba(30,41,59,0.04)' }}>
+          <Box sx={{ position: 'absolute', left: 12, top: 12 }}>
+            <IconButton onClick={() => navigate('/notes')} sx={{ bgcolor: '#f5f5f5', color: '#222', '&:hover': { bgcolor: '#e0e0e0' } }}>
+              <ArrowBackIosNewIcon fontSize="small" />
+            </IconButton>
           </Box>
-          <Typography size="sm" mb={2}>Blok Catatan:</Typography>
-          {reorderLoading && <Typography color="blue.600">Menyimpan urutan blok...</Typography>}
-          {autosaveLoading && <Typography color="blue.600">Menyimpan perubahan blok...</Typography>}
-          {blocks.length === 0 && <Typography color="gray.500">Belum ada blok.</Typography>}
+          <Box mb={2}>
+            <Typography variant="h4" fontWeight={800} align="center" sx={{ fontFamily: 'Inter, Roboto, Arial, sans-serif', mb: 0 }}>
+              {note?.title}
+            </Typography>
+          </Box>
+          <Divider sx={{ mb: 3 }} />
+          <Box mb={3}>
+            <IconButton onClick={() => setShowAddBlock(v => !v)} color="primary" sx={{ bgcolor: '#222', color: '#fff', borderRadius: 2, boxShadow: 1, '&:hover': { bgcolor: '#111' }, mb: 1 }}>
+              <AddIcon />
+            </IconButton>
+            {showAddBlock && (
+              <Box display="flex" mt={1} gap={1}>
+                <IconButton onClick={() => handleAddBlock('text')} disabled={addBlockLoading} sx={{ bgcolor: '#f5f5f5', color: '#222' }}><TextFieldsIcon /></IconButton>
+                <IconButton onClick={() => handleAddBlock('image')} disabled={addBlockLoading} sx={{ bgcolor: '#f5f5f5', color: '#222' }}><ImageIcon /></IconButton>
+                <IconButton onClick={() => handleAddBlock('checklist')} disabled={addBlockLoading} sx={{ bgcolor: '#f5f5f5', color: '#222' }}><CheckBoxIcon /></IconButton>
+                <IconButton onClick={() => handleAddBlock('code')} disabled={addBlockLoading} sx={{ bgcolor: '#f5f5f5', color: '#222' }}><CodeIcon /></IconButton>
+              </Box>
+            )}
+          </Box>
+          <Box sx={{ background: '#fff', pt: 1, pb: 1 }}>
+            <Typography sx={{ fontSize: 15, color: '#444', fontWeight: 600 }}>Blok Catatan:</Typography>
+          </Box>
+        </Box>
+        {/* Konten blok scrollable */}
+        <Box sx={{ flex: 1, overflowY: 'auto', pr: 1 }}>
+          {reorderLoading && <Typography color="primary.main">Menyimpan urutan blok...</Typography>}
+          {autosaveLoading && <Typography color="primary.main">Menyimpan perubahan blok...</Typography>}
+          {blocks.length === 0 && <Typography color="text.secondary">Belum ada blok.</Typography>}
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
               <Stack as="ul" spacing={2} align="stretch">
                 {blocks.map(block => (
                   <SortableBlock key={block.id} block={block}>
-                    <Flex align="center" gap={2} mb={2}>
-                      <Typography fontWeight="bold">{block.type}</Typography>
-                      <Button size="xs" onClick={() => handleEdit(block)} variant="outline">Edit</Button>
-                      <Button size="xs" colorScheme="red" onClick={() => handleDelete(block.id)} isLoading={deleteLoading === block.id}>Hapus</Button>
-                    </Flex>
-                    {editBlockId === block.id ? (
-                      <Box mt={2}>
-                        {block.type === 'text' && (
-                          <TextField
-                            as="textarea"
-                            value={editValue}
-                            onChange={e => handleEditChange(block, e.target.value)}
-                            rows={3}
-                            fontSize={15}
-                            bg="gray.50"
-                          />
-                        )}
-                        {block.type === 'code' && (
-                          <TextField
-                            as="textarea"
-                            value={editValue}
-                            onChange={e => handleEditChange(block, e.target.value)}
-                            rows={4}
-                            fontFamily="monospace"
-                            fontSize={15}
-                            bg="gray.100"
-                          />
-                        )}
-                        {block.type === 'image' && (
-                          <Box>
+                    <Paper elevation={1} sx={{ p: 2, borderRadius: 3, mb: 1, background: '#fafbfc', boxShadow: '0 1px 4px 0 rgba(60,60,60,0.04)' }}>
+                      <Box display="flex" alignItems="center" gap={2} mb={1} justifyContent="space-between">
+                        <Typography fontWeight="bold" sx={{ textTransform: 'capitalize', color: '#222' }}>{block.type}</Typography>
+                        <Box display="flex" gap={1}>
+                          <IconButton size="small" onClick={() => handleEdit(block)} sx={{ color: '#444' }}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" onClick={() => handleDelete(block.id)} disabled={deleteLoading === block.id} sx={{ color: '#d32f2f' }}>
+                            <DeleteOutlineIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      </Box>
+                      {editBlockId === block.id ? (
+                        <Box mt={2}>
+                          {block.type === 'text' && (
                             <TextField
-                              type="file"
-                              accept="image/*"
-                              ref={fileInputRef}
-                              onChange={e => {
-                                if (e.target.files && e.target.files[0]) {
-                                  handleImageUpload(block, e.target.files[0]);
-                                }
-                              }}
-                              mb={2}
-                              isDisabled={uploadingImage}
-                            />
-                            {uploadingImage && <Typography color="blue.500">Mengupload gambar...</Typography>}
-                            {uploadError && <Typography color="red.500">{uploadError}</Typography>}
-                            {(localImage || editValue) && (
-                              <Box mb={2}>
-                                <img
-                                  src={
-                                    localImage ||
-                                    (editValue &&
-                                      (editValue.startsWith('http://') || editValue.startsWith('https://')
-                                        ? editValue
-                                        : BACKEND_URL + editValue)
-                                    )
-                                  }
-                                  alt="preview"
-                                  style={{ maxWidth: 220, maxHeight: 120, borderRadius: 6, border: '1px solid #ddd' }}
-                                />
-                              </Box>
-                            )}
-                            <TextField
-                              type="url"
+                              multiline
                               value={editValue}
-                              onChange={e => {
-                                setEditValue(e.target.value);
-                                setLocalImage(null);
-                                handleEditChange(block, e.target.value);
-                              }}
-                              placeholder="URL gambar"
-                              fontSize={15}
-                              bg="gray.50"
-                              mt={1}
+                              onChange={e => handleEditChange(block, e.target.value)}
+                              rows={3}
+                              sx={{ fontSize: 15, background: '#fff', borderRadius: 2, textAlign: 'left' }}
+                              fullWidth
+                              placeholder="Tulis catatan..."
                             />
-                          </Box>
-                        )}
-                        {block.type === 'checklist' && (
-                          <Flex align="center" gap={2}>
+                          )}
+                          {block.type === 'code' && (
                             <TextField
-                              type="checkbox"
-                              checked={editChecklist.checked}
-                              onChange={e => handleEditChange(block, { ...editChecklist, checked: e.target.checked })}
-                              width={5}
+                              multiline
+                              value={editValue}
+                              onChange={e => handleEditChange(block, e.target.value)}
+                              rows={4}
+                              sx={{ fontFamily: 'monospace', fontSize: 15, background: '#f5f5f5', borderRadius: 2 }}
+                              fullWidth
+                              placeholder="Tulis kode..."
                             />
-                            <TextField
-                              type="text"
-                              value={editChecklist.text}
-                              onChange={e => handleEditChange(block, { ...editChecklist, text: e.target.value })}
-                              placeholder="Teks checklist"
-                              fontSize={15}
-                              bg="gray.50"
-                            />
-                          </Flex>
-                        )}
-                        {editError && <Typography color="red.500" mt={1}>{editError}</Typography>}
-                        <Flex mt={2} gap={2}>
-                          <Button colorScheme="blue" onClick={() => handleEditSubmit(block)}>Simpan</Button>
-                          <Button onClick={() => setEditBlockId(null)}>Batal</Button>
-                        </Flex>
-                      </Box>
-                    ) : (
-                      <Box mt={2}>
-                        {block.type === 'text' && <Typography>{block.content}</Typography>}
-                        {block.type === 'code' && (
-                          <Box as="pre" bg="gray.100" p={2} borderRadius="md" fontFamily="monospace" fontSize={15}>
-                            {block.content}
+                          )}
+                          {block.type === 'image' && (
+                            <Box>
+                              <TextField
+                                type="file"
+                                accept="image/*"
+                                inputRef={fileInputRef}
+                                onChange={e => {
+                                  if (e.target.files && e.target.files[0]) {
+                                    handleImageUpload(block, e.target.files[0]);
+                                  }
+                                }}
+                                sx={{ mb: 2 }}
+                                disabled={uploadingImage}
+                                fullWidth
+                              />
+                              {uploadingImage && <Typography color="primary.main">Mengupload gambar...</Typography>}
+                              {uploadError && <Typography color="error.main">{uploadError}</Typography>}
+                              {(localImage || editValue) && (
+                                <Box mb={2}>
+                                  <img
+                                    src={
+                                      localImage ||
+                                      (editValue &&
+                                        (editValue.startsWith('http://') || editValue.startsWith('https://')
+                                          ? editValue
+                                          : BACKEND_URL + editValue)
+                                      )
+                                    }
+                                    alt="preview"
+                                    style={{ maxWidth: 220, maxHeight: 120, borderRadius: 6, border: '1px solid #ddd' }}
+                                  />
+                                </Box>
+                              )}
+                              <TextField
+                                type="url"
+                                value={editValue}
+                                onChange={e => {
+                                  setEditValue(e.target.value);
+                                  setLocalImage(null);
+                                  handleEditChange(block, e.target.value);
+                                }}
+                                placeholder="URL gambar..."
+                                sx={{ fontSize: 15, background: '#f5f5f5', mt: 1, borderRadius: 2 }}
+                                fullWidth
+                              />
+                            </Box>
+                          )}
+                          {block.type === 'checklist' && (
+                            <Box display="flex" alignItems="center" gap={2}>
+                              <Checkbox
+                                checked={editChecklist.checked}
+                                onChange={e => handleEditChange(block, { ...editChecklist, checked: e.target.checked })}
+                                sx={{ p: 0, mr: 1 }}
+                              />
+                              <TextField
+                                value={editChecklist.text}
+                                onChange={e => handleEditChange(block, { ...editChecklist, text: e.target.value })}
+                                placeholder="Tulis checklist..."
+                                sx={{ fontSize: 15, background: '#f5f5f5', borderRadius: 2 }}
+                                fullWidth
+                              />
+                            </Box>
+                          )}
+                          {editError && <Typography color="error.main" mt={1}>{editError}</Typography>}
+                          <Box display="flex" mt={2} gap={2}>
+                            <IconButton color="primary" onClick={() => handleEditSubmit(block)} sx={{ bgcolor: '#e3f2fd', '&:hover': { bgcolor: '#bbdefb' } }}>
+                              <CheckIcon />
+                            </IconButton>
+                            <IconButton onClick={() => setEditBlockId(null)} sx={{ bgcolor: '#ffebee', '&:hover': { bgcolor: '#ffcdd2' } }}>
+                              <CloseIcon />
+                            </IconButton>
                           </Box>
-                        )}
-                        {block.type === 'image' && block.content && (
-                          <Box>
-                            <img
-                              src={
-                                block.content.startsWith('http://') || block.content.startsWith('https://')
-                                  ? block.content
-                                  : BACKEND_URL + block.content
-                              }
-                              alt="img"
-                              style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }}
-                            />
-                          </Box>
-                        )}
-                        {block.type === 'checklist' && (
-                          <Flex align="center" gap={2}>
-                            <TextField type="checkbox" checked={!!block.content.checked} readOnly width={5} />
-                            <Typography>{block.content.text}</Typography>
-                          </Flex>
-                        )}
-                      </Box>
-                    )}
+                        </Box>
+                      ) : (
+                        <Box mt={2}>
+                          {block.type === 'text' && <Typography sx={{ whiteSpace: 'pre-line', textAlign: 'left' }}>{block.content}</Typography>}
+                          {block.type === 'code' && (
+                            <Box component="pre" sx={{ background: '#f5f5f5', p: 2, borderRadius: 2, fontFamily: 'monospace', fontSize: 15, overflowX: 'auto' }}>
+                              {block.content}
+                            </Box>
+                          )}
+                          {block.type === 'image' && block.content && (
+                            <Box>
+                              <img
+                                src={
+                                  block.content.startsWith('http://') || block.content.startsWith('https://')
+                                    ? block.content
+                                    : BACKEND_URL + block.content
+                                }
+                                alt="img"
+                                style={{ maxWidth: 320, maxHeight: 180, borderRadius: 6, border: '1px solid #ddd' }}
+                              />
+                            </Box>
+                          )}
+                          {block.type === 'checklist' && (
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Checkbox checked={!!block.content.checked} disabled sx={{ p: 0, mr: 1 }} />
+                              <Typography sx={{ textDecoration: block.content.checked ? 'line-through' : 'none', color: block.content.checked ? '#888' : '#222', fontSize: 16 }}>
+                                {block.content.text}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      )}
+                    </Paper>
                   </SortableBlock>
                 ))}
               </Stack>
             </SortableContext>
           </DndContext>
-        </>
-      )}
+        </Box>
+      </Paper>
     </Box>
   );
 } 
