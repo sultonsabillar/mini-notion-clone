@@ -116,6 +116,9 @@ export default function Register({ NavBar }) {
             )}
           </Stack>
         </form>
+        <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 4, fontWeight: 400, fontSize: 13 }}>
+          By Sulton | Mini Notion 2025
+        </Typography>
       </Paper>
     </Box>
   );
