@@ -483,6 +483,9 @@ export default function NoteEditor() {
           </DndContext>
         </Box>
       </Paper>
+      <Typography variant="body2" align="center" color="text.secondary" sx={{ mt: 4, mb: 2, fontWeight: 400, fontSize: 13 }}>
+        By Sulton | Mini Notion 2025
+      </Typography>
     </Box>
   );
 } 
